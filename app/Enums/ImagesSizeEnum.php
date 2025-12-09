@@ -1,6 +1,8 @@
 <?php
 
-namespace Enums\App;
+
+namespace App\Enums;
+
 
 enum ImagesSizeEnum: string
 {
