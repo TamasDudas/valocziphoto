@@ -33,6 +33,10 @@ class Image extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the picture sources for the <picture> tag based on image versions.
+     * Returns an array of srcset and media queries for responsive images.
+     */
     protected function getPictureSourcesAttribute(): array
     {
         $sources = [];
