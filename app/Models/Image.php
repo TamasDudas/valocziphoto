@@ -27,6 +27,8 @@ class Image extends Model implements HasMedia
         'alt_text',
     ];
 
+    protected $with = ['media'];
+
 
     public function Categories()
     {
@@ -40,8 +42,8 @@ class Image extends Model implements HasMedia
     }
 
     /**
-     * Register media conversions for image resizing.
-     * Creates thumbnail, medium, and large versions based on ImagesSizeEnum.
+     * Média konverziók regisztrálása képátméretezéshez.
+     * Thumbnail, medium és large verziókat hoz létre az ImagesSizeEnum alapján.
      */
     public function registerMediaConversions(?Media $media = null): void
     {
@@ -59,8 +61,8 @@ class Image extends Model implements HasMedia
     }
 
     /**
-     * Get the picture sources for the <picture> tag based on media conversions.
-     * Returns an array of srcset and media queries for responsive images.
+     * A <picture> tag-hez szükséges források lekérése a média konverziók alapján.
+     * Srcset és media query-k tömbjét adja vissza reszponzív képekhez.
      */
     protected function getPictureSourcesAttribute(): array
     {

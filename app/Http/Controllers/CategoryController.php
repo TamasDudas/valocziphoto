@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use App\Http\Resources\CategoryResource;
 
 class CategoryController extends Controller
 {
@@ -12,7 +16,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
+        $categories = Category::all();
+
+        return Inertia::render('Categories', CategoryResource::collection($categories));
     }
 
     /**
@@ -20,7 +26,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('CategoryCreate');
     }
 
     /**
@@ -28,7 +34,26 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'slug' => 'sometimes|string|max:255|unique:categories,slug',
+                'description' => 'nullable|string',
+                'order' => 'required|integer|min:0',
+            ]);
+
+            $validated['user_id'] = auth()->id();
+            $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
+
+            Category::create($validated);
+
+            return redirect()->back()->with('success', 'Kategória sikeresen létrehozva!');
+        } catch (\Exception $e) {
+            Log::error('Hiba a kategória létrehozásakor', ['error' => $e->getMessage()]);
+            return redirect()->back()
+                             ->withErrors(['error' => 'Váratlan hiba történt: ' . $e->getMessage()])
+                             ->withInput();
+        }
     }
 
     /**
@@ -36,7 +61,8 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        //
+        $category->load('images');
+        return Inertia::render('Category', ['category' => new CategoryResource($category)]);
     }
 
     /**
@@ -44,7 +70,7 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        //
+        return Inertia::render('EditCategory', ['category' => new CategoryResource($category)]);
     }
 
     /**
@@ -52,7 +78,26 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        //
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'slug' => 'sometimes|string|max:255|unique:categories,slug,' . $category->id,
+                'description' => 'nullable|string',
+                'order' => 'required|integer|min:0',
+            ]);
+
+            $validated['user_id'] = auth()->id();
+            $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
+
+            $category->update($validated);
+
+            return redirect()->back()->with('success', 'Kategória sikeresen frissítve!');
+        } catch (\Exception $e) {
+            Log::error('Hiba a kategória frissítésekor', ['error' => $e->getMessage()]);
+            return redirect()->back()
+                             ->withErrors(['error' => 'Váratlan hiba történt: ' . $e->getMessage()])
+                             ->withInput();
+        }
     }
 
     /**
@@ -60,6 +105,14 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        try {
+            $category->delete();
+
+            return redirect()->back()->with('success', 'A kategória sikeresen törölve!');
+        } catch (\Exception $e) {
+            Log::error('Hiba a kategória törlésekor', ['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Hiba történt a törlés során.']);
+        }
+
     }
 }

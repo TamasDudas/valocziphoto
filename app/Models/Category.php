@@ -16,9 +16,16 @@ class Category extends Model
         'slug',
         'description',
         'order',
+        'user_id',
     ];
 
-    public function Images(){
+    public function User()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function Images()
+    {
         return $this->belongsToMany(Image::class);
     }
 

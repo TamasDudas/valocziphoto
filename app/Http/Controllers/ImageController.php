@@ -26,7 +26,7 @@ class ImageController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('ImageCreate');
     }
 
     /**
@@ -53,6 +53,7 @@ class ImageController extends Controller
                 ->toMediaCollection('images');
 
             // Kép adatok kinyerése (width, height), mert a Media objektum nem tartalmazza ezeket
+            // Ez meta adat, hasznos pl. megjelenítéskor vagy validációhoz
             $imageInfo = getimagesize($request->file('image')->getRealPath());
 
             // Meta adatok frissítése, mert itt már ismerjük a meta adatokat
@@ -111,6 +112,13 @@ class ImageController extends Controller
      */
     public function destroy(Image $image)
     {
-        //
+        try {
+            $image->delete(); // Medialibrary automatikusan törli a fájlokat
+
+            return redirect()->back()->with('success', 'Kép sikeresen törölve!');
+        } catch (\Exception $e) {
+            Log::error('Hiba a kép törlésekor', ['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Hiba történt a törlés során.']);
+        }
     }
 }
