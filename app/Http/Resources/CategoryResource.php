@@ -20,6 +20,7 @@ class CategoryResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description,
             'order' => $this->order,
+            'images_count' => $this->images->count(),
             'images' => $this->images->pluck('original_filename', 'id'),
         ];
     }

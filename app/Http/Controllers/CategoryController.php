@@ -16,9 +16,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::with('images')->get();
 
-        return Inertia::render('Categories', CategoryResource::collection($categories));
+        return Inertia::render('Categories', ['categories' => CategoryResource::collection($categories)]);
     }
 
     /**

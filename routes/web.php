@@ -1,11 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ImageController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [
+    return Inertia::render('Home', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
@@ -15,8 +17,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::resource('images', \App\Http\Controllers\ImageController::class);
-    Route::resource('categories', \App\Http\Controllers\CategoryController::class);
+    Route::resource('images', ImageController::class);
+    Route::resource('categories', CategoryController::class)->except('index');
 });
+
+Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 
 require __DIR__.'/settings.php';
