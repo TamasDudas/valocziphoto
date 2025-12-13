@@ -15,16 +15,15 @@ class Category extends Model
         'name',
         'slug',
         'description',
-        'order',
         'user_id',
     ];
 
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function Images()
+    public function images()
     {
         return $this->belongsToMany(Image::class);
     }

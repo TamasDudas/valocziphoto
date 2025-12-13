@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Http\Resources\ImageResource;
 
 class ImageController extends Controller
@@ -15,10 +16,9 @@ class ImageController extends Controller
      */
     public function index()
     {
-        // Szűrés a bejelentkezett felhasználó képeire
         $images = Image::with('categories')->where('user_id', auth()->id())->get();
 
-        return Inertia::render('Images', ImageResource::collection($images));
+        return Inertia::render('Gallery', ['images' => ImageResource::collection($images)]);
     }
 
     /**
@@ -26,7 +26,7 @@ class ImageController extends Controller
      */
     public function create()
     {
-        return Inertia::render('ImageCreate');
+        return Inertia::render('CreateGalleryImage');
     }
 
     /**
@@ -36,44 +36,36 @@ class ImageController extends Controller
     {
         try {
             $validated = $request->validate([
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif,avif|max:2048',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp,avif|max:2048',
                 'alt_text' => 'nullable|string|max:255',
-                'category_ids' => 'sometimes|array',
+                'category_ids' => 'array',
                 'category_ids.*' => 'exists:categories,id',
             ]);
 
-            // Kép létrehozása alap adatokkal,mert még nem ismerjük a fájl meta adatait
+            $imageFile = $request->file('image');
+
+            // Létrehozzuk az Image rekordot alapadatokkal
             $image = Image::create([
                 'user_id' => auth()->id(),
+                'filename' => $imageFile->getClientOriginalName(),
+                'original_filename' => $imageFile->getClientOriginalName(),
+                'size' => $imageFile->getSize(),
+                'mime_type' => $imageFile->getMimeType(),
+                'width' => getimagesize($imageFile)[0] ?? null,
+                'height' => getimagesize($imageFile)[1] ?? null,
                 'alt_text' => $validated['alt_text'] ?? null,
+                'versions' => json_encode(['thumbnail', 'medium', 'large']),
             ]);
 
-            // Fájl hozzáadása medialibrary-vel
-            $media = $image->addMediaFromRequest('image')
-                ->toMediaCollection('images');
+            // Spatie MediaLibrary hozzáadása
+            $image->addMediaFromRequest('image')
+                  ->toMediaCollection();
 
-            // Kép adatok kinyerése (width, height), mert a Media objektum nem tartalmazza ezeket
-            // Ez meta adat, hasznos pl. megjelenítéskor vagy validációhoz
-            $imageInfo = getimagesize($request->file('image')->getRealPath());
-
-            // Meta adatok frissítése, mert itt már ismerjük a meta adatokat
-            $image->update([
-                'filename' => $media->file_name,
-                'original_filename' => $media->name,
-                'size' => $media->size,
-                'mime_type' => $media->mime_type,
-                'width' => $imageInfo[0] ?? 0,
-                'height' => $imageInfo[1] ?? 0,
-                'versions' => [], // Medialibrary kezeli
-            ]);
-
-            // Kategóriák hozzárendelése, ha vannak
-            if ($request->has('category_ids')) {
-                $image->categories()->attach($request->category_ids);
+            if (isset($validated['category_ids'])) {
+                $image->categories()->sync($validated['category_ids']);
             }
 
             return redirect()->back()->with('success', 'Kép sikeresen feltöltve!');
-
         } catch (\Exception $e) {
             Log::error('Hiba a kép feltöltésekor', ['error' => $e->getMessage()]);
             return redirect()->back()
@@ -82,13 +74,13 @@ class ImageController extends Controller
         }
     }
 
-
     /**
      * Display the specified resource.
      */
     public function show(Image $image)
     {
-        //
+        $this->authorize('view', $image);
+        return Inertia::render('Image', ['image' => new ImageResource($image)]);
     }
 
     /**
@@ -96,7 +88,8 @@ class ImageController extends Controller
      */
     public function edit(Image $image)
     {
-        //
+        $this->authorize('update', $image);
+        return Inertia::render('EditImage', ['image' => new ImageResource($image)]);
     }
 
     /**
@@ -104,7 +97,34 @@ class ImageController extends Controller
      */
     public function update(Request $request, Image $image)
     {
-        //
+        $this->authorize('update', $image);
+
+        try {
+            $validated = $request->validate([
+                'filename' => 'sometimes|string|max:255',
+                'original_filename' => 'sometimes|string|max:255',
+                'size' => 'sometimes|integer',
+                'mime_type' => 'sometimes|string|max:255',
+                'width' => 'sometimes|integer',
+                'height' => 'sometimes|integer',
+                'alt_text' => 'nullable|string|max:255',
+                'category_ids' => 'array',
+                'category_ids.*' => 'exists:categories,id',
+            ]);
+
+            $image->update($validated);
+
+            if (isset($validated['category_ids'])) {
+                $image->categories()->sync($validated['category_ids']);
+            }
+
+            return redirect()->back()->with('success', 'Kép sikeresen frissítve!');
+        } catch (\Exception $e) {
+            Log::error('Hiba a kép frissítésekor', ['error' => $e->getMessage()]);
+            return redirect()->back()
+                             ->withErrors(['error' => 'Váratlan hiba történt: ' . $e->getMessage()])
+                             ->withInput();
+        }
     }
 
     /**
@@ -112,10 +132,12 @@ class ImageController extends Controller
      */
     public function destroy(Image $image)
     {
-        try {
-            $image->delete(); // Medialibrary automatikusan törli a fájlokat
+        $this->authorize('delete', $image);
 
-            return redirect()->back()->with('success', 'Kép sikeresen törölve!');
+        try {
+            $image->delete();
+
+            return redirect()->back()->with('success', 'A kép sikeresen törölve!');
         } catch (\Exception $e) {
             Log::error('Hiba a kép törlésekor', ['error' => $e->getMessage()]);
             return redirect()->back()->withErrors(['error' => 'Hiba történt a törlés során.']);

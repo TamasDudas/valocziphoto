@@ -23,4 +23,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 
+
 require __DIR__.'/settings.php';

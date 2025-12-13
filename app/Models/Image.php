@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\ImagesSizeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
@@ -29,60 +28,34 @@ class Image extends Model implements HasMedia
 
     protected $with = ['media'];
 
-
-    public function Categories()
+    public function categories()
     {
         return $this->belongsToMany(Category::class);
     }
 
-
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
     /**
      * Média konverziók regisztrálása képátméretezéshez.
-     * Thumbnail, medium és large verziókat hoz létre az ImagesSizeEnum alapján.
      */
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumbnail')
-            ->width(ImagesSizeEnum::THUMBNAIL->width())
-            ->height(ImagesSizeEnum::THUMBNAIL->width());
+            ->width(300)
+            ->height(300)
+            ->sharpen(10);
 
         $this->addMediaConversion('medium')
-            ->width(ImagesSizeEnum::MEDIUM->width())
-            ->height(ImagesSizeEnum::MEDIUM->width());
+            ->width(600)
+            ->height(600)
+            ->sharpen(10);
 
         $this->addMediaConversion('large')
-            ->width(ImagesSizeEnum::LARGE->width())
-            ->height(ImagesSizeEnum::LARGE->width());
-    }
-
-    /**
-     * A <picture> tag-hez szükséges források lekérése a média konverziók alapján.
-     * Srcset és media query-k tömbjét adja vissza reszponzív képekhez.
-     */
-    protected function getPictureSourcesAttribute(): array
-    {
-        $sources = [];
-        foreach (ImagesSizeEnum::cases() as $size) {
-            $url = $this->getFirstMediaUrl('images', $size->value);
-            if ($url) {
-                $sources[] = [
-                    'srcset' => $url,
-                    'media' => "(max-width: {$size->width()}px)",
-                ];
-            }
-        }
-        return $sources;
-    }
-
-    public function casts(): array
-    {
-        return [
-            'versions' => 'array',
-        ];
+            ->width(1200)
+            ->height(1200)
+            ->sharpen(10);
     }
 }

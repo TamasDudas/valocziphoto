@@ -19,9 +19,8 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'order' => $this->order,
-            'images_count' => $this->images->count(),
-            'images' => $this->images->pluck('original_filename', 'id'),
+            'images' => $this->whenLoaded('images'),
+            'images_count' => $this->whenLoaded('images', fn() => $this->images->count()),
         ];
     }
 }

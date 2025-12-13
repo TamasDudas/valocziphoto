@@ -11,7 +11,9 @@ export default function AppHeaderLayout({
     return (
         <AppShell>
             <AppHeader breadcrumbs={breadcrumbs} />
-            <AppContent>{children}</AppContent>
+            <div className="p-4">
+                <AppContent>{children}</AppContent>
+            </div>
         </AppShell>
     );
 }

@@ -16,7 +16,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::with('images')->get();
+        $categories = Category::all();
 
         return Inertia::render('Categories', ['categories' => CategoryResource::collection($categories)]);
     }
@@ -26,7 +26,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return Inertia::render('CategoryCreate');
+        return Inertia::render('CreateCategory');
     }
 
     /**
@@ -39,7 +39,6 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255',
                 'slug' => 'sometimes|string|max:255|unique:categories,slug',
                 'description' => 'nullable|string',
-                'order' => 'required|integer|min:0',
             ]);
 
             $validated['user_id'] = auth()->id();
@@ -83,7 +82,6 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255',
                 'slug' => 'sometimes|string|max:255|unique:categories,slug,' . $category->id,
                 'description' => 'nullable|string',
-                'order' => 'required|integer|min:0',
             ]);
 
             $validated['user_id'] = auth()->id();

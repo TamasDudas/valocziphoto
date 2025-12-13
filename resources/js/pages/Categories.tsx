@@ -40,7 +40,7 @@ export default function Categories({ categories }: Props) {
                                     </p>
                                 )}
                                 <p className="text-sm text-gray-500">
-                                    {category.images_count || 0} kép
+                                    Képek: {category.images_count || 0}
                                 </p>
                             </div>
                         ))}
