@@ -60,8 +60,9 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        $category->load('images');
-        return Inertia::render('Category', ['category' => new CategoryResource($category)]);
+        $category->load(['images.media', 'featuredImage.media']);
+        
+        return Inertia::render('CategoryGallery', ['category' => (new CategoryResource($category))->resolve()]);
     }
 
     /**
@@ -69,7 +70,13 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        return Inertia::render('EditCategory', ['category' => new CategoryResource($category)]);
+        $category->load(['images.media', 'featuredImage.media']);
+        $images = \App\Models\Image::with('media')->where('user_id', auth()->id())->get();
+        
+        return Inertia::render('EditCategory', [
+            'category' => new CategoryResource($category),
+            'availableImages' => \App\Http\Resources\ImageResource::collection($images)->resolve(),
+        ]);
     }
 
     /**
@@ -82,6 +89,7 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255',
                 'slug' => 'sometimes|string|max:255|unique:categories,slug,' . $category->id,
                 'description' => 'nullable|string',
+                'featured_image_id' => 'nullable|exists:images,id',
             ]);
 
             $validated['user_id'] = auth()->id();

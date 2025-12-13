@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 interface Category {
     id: number;
@@ -27,9 +27,10 @@ export default function Categories({ categories }: Props) {
                 ) : (
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {categoryList.map((category) => (
-                            <div
+                            <Link
                                 key={category.id}
-                                className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800"
+                                href={`/categories/${category.id}`}
+                                className="block rounded-lg bg-white p-6 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800"
                             >
                                 <h2 className="mb-2 text-xl font-semibold">
                                     {category.name}
@@ -42,7 +43,7 @@ export default function Categories({ categories }: Props) {
                                 <p className="text-sm text-gray-500">
                                     Képek: {category.images_count || 0}
                                 </p>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

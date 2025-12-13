@@ -16,6 +16,7 @@ class Category extends Model
         'slug',
         'description',
         'user_id',
+        'featured_image_id',
     ];
 
     public function user()
@@ -26,6 +27,11 @@ class Category extends Model
     public function images()
     {
         return $this->belongsToMany(Image::class);
+    }
+
+    public function featuredImage()
+    {
+        return $this->belongsTo(Image::class, 'featured_image_id');
     }
 
 }

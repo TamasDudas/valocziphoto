@@ -19,7 +19,13 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'images' => $this->whenLoaded('images'),
+            'featured_image_id' => $this->featured_image_id,
+            'featured_image' => $this->whenLoaded('featuredImage', function () {
+                return $this->featuredImage ? (new ImageResource($this->featuredImage))->resolve() : null;
+            }),
+            'images' => $this->whenLoaded('images', function () {
+                return ImageResource::collection($this->images)->resolve();
+            }),
             'images_count' => $this->whenLoaded('images', fn() => $this->images->count()),
         ];
     }
