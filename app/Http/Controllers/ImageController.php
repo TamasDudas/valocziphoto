@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Image;
+use App\Models\Category;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use App\Http\Resources\ImageResource;
 
 class ImageController extends Controller
@@ -16,9 +17,10 @@ class ImageController extends Controller
      */
     public function index()
     {
-        $images = Image::with('categories')->where('user_id', auth()->id())->get();
+        $images = Image::with('categories', 'media')->where('user_id', auth()->id())->get();
+        $imagesArray = ImageResource::collection($images)->resolve();
 
-        return Inertia::render('Gallery', ['images' => ImageResource::collection($images)]);
+        return Inertia::render('Gallery', ['images' => $imagesArray]);
     }
 
     /**
@@ -26,7 +28,8 @@ class ImageController extends Controller
      */
     public function create()
     {
-        return Inertia::render('CreateGalleryImage');
+        $categories = Category::where('user_id', auth()->id())->get();
+        return Inertia::render('CreateGalleryImage', ['categories' => $categories]);
     }
 
     /**
@@ -36,36 +39,47 @@ class ImageController extends Controller
     {
         try {
             $validated = $request->validate([
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp,avif|max:2048',
+                'images' => 'required|array',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp,avif|max:800',
                 'alt_text' => 'nullable|string|max:255',
                 'category_ids' => 'array',
                 'category_ids.*' => 'exists:categories,id',
             ]);
 
-            $imageFile = $request->file('image');
+            $imageFiles = $request->file('images');
+            $altText = $validated['alt_text'] ?? null;
 
-            // Létrehozzuk az Image rekordot alapadatokkal
-            $image = Image::create([
-                'user_id' => auth()->id(),
-                'filename' => $imageFile->getClientOriginalName(),
-                'original_filename' => $imageFile->getClientOriginalName(),
-                'size' => $imageFile->getSize(),
-                'mime_type' => $imageFile->getMimeType(),
-                'width' => getimagesize($imageFile)[0] ?? null,
-                'height' => getimagesize($imageFile)[1] ?? null,
-                'alt_text' => $validated['alt_text'] ?? null,
-                'versions' => json_encode(['thumbnail', 'medium', 'large']),
-            ]);
+            Log::info('Files received: ' . count($imageFiles));
+            Log::info('Request all: ' . json_encode($request->all()));
 
-            // Spatie MediaLibrary hozzáadása
-            $image->addMediaFromRequest('image')
-                  ->toMediaCollection();
+            foreach ($imageFiles as $imageFile) {
+                $uniqueFilename = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
 
-            if (isset($validated['category_ids'])) {
-                $image->categories()->sync($validated['category_ids']);
+                // Létrehozzuk az Image rekordot alapadatokkal
+                $image = Image::create([
+                    'user_id' => auth()->id(),
+                    'filename' => $uniqueFilename,
+                    'original_filename' => $imageFile->getClientOriginalName(),
+                    'size' => $imageFile->getSize(),
+                    'mime_type' => $imageFile->getMimeType(),
+                    'width' => getimagesize($imageFile)[0] ?? null,
+                    'height' => getimagesize($imageFile)[1] ?? null,
+                    'alt_text' => $altText,
+                    'versions' => json_encode(['thumbnail', 'medium', 'large']),
+                ]);
+
+                // Spatie MediaLibrary hozzáadása
+                $image->addMedia($imageFile->getPathname())
+                      ->usingName($imageFile->getClientOriginalName())
+                      ->usingFileName($uniqueFilename)
+                      ->toMediaCollection();
+
+                if (isset($validated['category_ids'])) {
+                    $image->categories()->sync($validated['category_ids']);
+                }
             }
 
-            return redirect()->back()->with('success', 'Kép sikeresen feltöltve!');
+            return redirect()->route('images.index')->with('success', 'Kép sikeresen feltöltve!');
         } catch (\Exception $e) {
             Log::error('Hiba a kép feltöltésekor', ['error' => $e->getMessage()]);
             return redirect()->back()

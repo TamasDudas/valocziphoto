@@ -26,7 +26,7 @@ class Image extends Model implements HasMedia
         'alt_text',
     ];
 
-    protected $with = ['media'];
+    protected $with = ['categories'];
 
     public function categories()
     {

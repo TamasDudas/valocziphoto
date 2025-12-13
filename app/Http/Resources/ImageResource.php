@@ -26,7 +26,13 @@ class ImageResource extends JsonResource
             'width' => $this->width,
             'height' => $this->height,
             'alt_text' => $this->alt_text,
-            'categories' => $this->categories->pluck('name', 'id'),
+            'categories' => $this->categories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                ];
+            }),
+            'image_url' => $this->getFirstMediaUrl(),
             
         ];
     }
