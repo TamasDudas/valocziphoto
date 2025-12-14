@@ -20,8 +20,12 @@ class ImageController extends Controller
     {
         $images = Image::with('categories')->where('user_id', auth()->id())->get();
         $imagesArray = ImageResource::collection($images)->resolve();
+        $categories = Category::where('user_id', auth()->id())->get();
 
-        return Inertia::render('Gallery', ['images' => $imagesArray]);
+        return Inertia::render('Gallery', [
+            'images' => $imagesArray,
+            'categories' => $categories,
+        ]);
     }
 
     /**

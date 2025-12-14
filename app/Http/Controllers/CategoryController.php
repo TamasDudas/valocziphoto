@@ -65,7 +65,7 @@ class CategoryController extends Controller
     {
         $category->load(['images', 'featuredImage']);
 
-        return Inertia::render('CategoryGallery', ['category' => (new CategoryResource($category))->resolve()]);
+        return Inertia::render('Category', ['category' => (new CategoryResource($category))->resolve()]);
     }
 
     /**
@@ -89,14 +89,15 @@ class CategoryController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
+                'name' => 'sometimes|required|string|max:255',
                 'slug' => 'sometimes|string|max:255|unique:categories,slug,'.$category->id,
                 'description' => 'nullable|string',
                 'featured_image_id' => 'nullable|exists:images,id',
             ]);
 
-            $validated['user_id'] = auth()->id();
-            $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
+            if (isset($validated['name'])) {
+                $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
+            }
 
             $category->update($validated);
 
@@ -125,5 +126,28 @@ class CategoryController extends Controller
             return redirect()->back()->withErrors(['error' => 'Hiba történt a törlés során.']);
         }
 
+    }
+
+    /**
+     * Attach multiple images to a category.
+     */
+    public function attachImages(Request $request, Category $category)
+    {
+        try {
+            $validated = $request->validate([
+                'image_ids' => 'required|array',
+                'image_ids.*' => 'exists:images,id',
+            ]);
+
+            // Hozzáadja a képeket a kategóriához (duplikáció nélkül)
+            $category->images()->syncWithoutDetaching($validated['image_ids']);
+
+            return redirect()->back()->with('success', 'Képek sikeresen hozzáadva a kategóriához!');
+        } catch (\Exception $e) {
+            Log::error('Hiba a képek hozzáadásakor', ['error' => $e->getMessage()]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Váratlan hiba történt: '.$e->getMessage()]);
+        }
     }
 }

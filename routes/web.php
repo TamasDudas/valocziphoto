@@ -20,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('images', ImageController::class);
     Route::post('images/cleanup', [ImageController::class, 'cleanup'])->name('images.cleanup');
     Route::resource('categories', CategoryController::class)->except('index');
+    Route::post('categories/{category}/attach-images', [CategoryController::class, 'attachImages'])->name('categories.attach-images');
 });
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
