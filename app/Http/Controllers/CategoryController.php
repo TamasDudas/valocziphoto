@@ -150,4 +150,26 @@ class CategoryController extends Controller
                 ->withErrors(['error' => 'Váratlan hiba történt: '.$e->getMessage()]);
         }
     }
+
+    /**
+     * Detach an image from a category.
+     */
+    public function detachImage(Request $request, Category $category)
+    {
+        try {
+            $validated = $request->validate([
+                'image_id' => 'required|exists:images,id',
+            ]);
+
+            // Eltávolítja a képet a kategóriából (a galériában megmarad)
+            $category->images()->detach($validated['image_id']);
+
+            return redirect()->back()->with('success', 'Kép sikeresen eltávolítva a kategóriából!');
+        } catch (\Exception $e) {
+            Log::error('Hiba a kép eltávolításakor', ['error' => $e->getMessage()]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Váratlan hiba történt: '.$e->getMessage()]);
+        }
+    }
 }

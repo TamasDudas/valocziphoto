@@ -1,3 +1,13 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -37,6 +47,7 @@ export default function Gallery() {
     const [selectedImage, setSelectedImage] = useState<Image | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedImages, setSelectedImages] = useState<number[]>([]);
+    const [imageToDelete, setImageToDelete] = useState<Image | null>(null);
 
     //Kiemelt kép kezelése
     const handleSetFeaturedImage = (categoryId: number) => {
@@ -82,6 +93,18 @@ export default function Gallery() {
                 },
             },
         );
+    };
+
+    // Kép végleges törlése
+    const confirmDeleteImage = () => {
+        if (!imageToDelete) return;
+
+        router.delete(`/images/${imageToDelete.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setImageToDelete(null);
+            },
+        });
     };
 
     return (
@@ -141,15 +164,33 @@ export default function Gallery() {
                                                         .map((c) => c.name)
                                                         .join(', ') || 'Nincs'}
                                                 </p>
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedImage(image);
-                                                        setIsModalOpen(true);
-                                                    }}
-                                                    className="mt-2 w-full rounded bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600"
-                                                >
-                                                    Beállítás kiemelt képnek
-                                                </button>
+                                                <div className="mt-2 flex gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedImage(
+                                                                image,
+                                                            );
+                                                            setIsModalOpen(
+                                                                true,
+                                                            );
+                                                        }}
+                                                        className="flex-1 rounded bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600"
+                                                    >
+                                                        Kiemelt kép
+                                                    </button>
+                                                    <Button
+                                                        onClick={() =>
+                                                            setImageToDelete(
+                                                                image,
+                                                            )
+                                                        }
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        className="flex-1"
+                                                    >
+                                                        Törlés
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -257,6 +298,34 @@ export default function Gallery() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* AlertDialog a kép törlésének megerősítéséhez */}
+            <AlertDialog
+                open={!!imageToDelete}
+                onOpenChange={(open) => !open && setImageToDelete(null)}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Biztosan törölni szeretnéd?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Véglegesen törlöd ezt a képet:{' '}
+                            <strong>{imageToDelete?.original_filename}</strong>
+                            <br />
+                            <br />
+                            Ez a művelet nem vonható vissza, és a kép törlődik
+                            minden kategóriából is!
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Mégse</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDeleteImage}>
+                            Törlés
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

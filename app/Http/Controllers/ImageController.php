@@ -159,9 +159,17 @@ class ImageController extends Controller
      */
     public function destroy(Image $image)
     {
-        $this->authorize('delete', $image);
+        // Ellenőrizzük hogy a felhasználó tulajdonosa-e a képnek
+        if ($image->user_id !== auth()->id()) {
+            abort(403, 'Nem törölheted mások képeit.');
+        }
 
         try {
+            // Fizikai fájl törlése a storage-ból
+            if ($image->path && Storage::disk('public')->exists($image->path)) {
+                Storage::disk('public')->delete($image->path);
+            }
+
             $image->delete();
 
             // Temp fájlok törlése kép törlés után

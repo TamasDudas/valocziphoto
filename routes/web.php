@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('images/cleanup', [ImageController::class, 'cleanup'])->name('images.cleanup');
     Route::resource('categories', CategoryController::class)->except('index');
     Route::post('categories/{category}/attach-images', [CategoryController::class, 'attachImages'])->name('categories.attach-images');
+    Route::post('categories/{category}/detach-image', [CategoryController::class, 'detachImage'])->name('categories.detach-image');
 });
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

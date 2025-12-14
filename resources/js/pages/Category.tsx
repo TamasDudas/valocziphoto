@@ -1,5 +1,17 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 interface Image {
     id: number;
@@ -21,12 +33,30 @@ interface Category {
 
 export default function CategoryGallery() {
     const { category } = usePage<{ category: Category }>().props;
+    const [imageToRemove, setImageToRemove] = useState<Image | null>(null);
 
     // Szűrjük ki a kiemelt képet a többi közül
     const otherImages =
         category?.images?.filter(
             (img) => img.id !== category.featured_image_id,
         ) || [];
+
+    const confirmRemoveImage = () => {
+        if (!imageToRemove) return;
+
+        router.post(
+            `/categories/${category.id}/detach-image`,
+            {
+                image_id: imageToRemove.id,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setImageToRemove(null);
+                },
+            },
+        );
+    };
 
     return (
         <AppLayout>
@@ -81,7 +111,7 @@ export default function CategoryGallery() {
                                         {otherImages.map((image) => (
                                             <div
                                                 key={image.id}
-                                                className="overflow-hidden rounded bg-gray-100 dark:bg-gray-700"
+                                                className="relative overflow-hidden rounded bg-gray-100 dark:bg-gray-700"
                                             >
                                                 <img
                                                     src={image.image_url}
@@ -97,6 +127,18 @@ export default function CategoryGallery() {
                                                             image.original_filename
                                                         }
                                                     </p>
+                                                    <Button
+                                                        onClick={() =>
+                                                            setImageToRemove(
+                                                                image,
+                                                            )
+                                                        }
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        className="mt-2 w-full"
+                                                    >
+                                                        Eltávolítás
+                                                    </Button>
                                                 </div>
                                             </div>
                                         ))}
@@ -118,6 +160,33 @@ export default function CategoryGallery() {
                     </div>
                 </div>
             </div>
+
+            {/* AlertDialog a kép eltávolításának megerősítéséhez */}
+            <AlertDialog
+                open={!!imageToRemove}
+                onOpenChange={(open) => !open && setImageToRemove(null)}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Biztosan eltávolítod?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Eltávolítod ezt a képet a kategóriából:{' '}
+                            <strong>{imageToRemove?.original_filename}</strong>
+                            <br />
+                            <br />A kép megmarad a galériában, és más
+                            kategóriákban is elérhető marad.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Mégse</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmRemoveImage}>
+                            Eltávolítás
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }
