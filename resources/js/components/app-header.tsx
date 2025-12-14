@@ -44,14 +44,7 @@ const mainNavItems: NavItem[] = [
         title: 'Kategóriák',
         href: '/categories',
     },
-    {
-        title: 'Kategória létrehozása',
-        href: '/categories/create',
-    },
-    {
-        title: 'Képek feltöltése',
-        href: '/images/create',
-    },
+
     {
         title: 'Galéria',
         href: '/images',
@@ -71,14 +64,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const getInitials = useInitials();
     const displayNavItems = auth.user
         ? mainNavItems
-        : mainNavItems.filter(
-              (item) =>
-                  ![
-                      'Dashboard',
-                      'Kategória létrehozása',
-                      'Képek feltöltése',
-                  ].includes(item.title),
-          );
+        : mainNavItems.filter((item) => !['Dashboard'].includes(item.title));
     return (
         <>
             <div className="border-b border-sidebar-border/80">

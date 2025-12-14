@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CategoryResource;
+use Inertia\Inertia;
+use App\Models\Image;
 use App\Models\Category;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Inertia\Inertia;
+use App\Http\Resources\ImageResource;
+use App\Http\Resources\CategoryResource;
 
 class CategoryController extends Controller
 {
@@ -72,11 +74,11 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         $category->load(['images', 'featuredImage']);
-        $images = \App\Models\Image::where('user_id', auth()->id())->get();
+        $images = Image::where('user_id', auth()->id())->get();
 
         return Inertia::render('EditCategory', [
             'category' => new CategoryResource($category),
-            'availableImages' => \App\Http\Resources\ImageResource::collection($images)->resolve(),
+            'availableImages' => ImageResource::collection($images)->resolve(),
         ]);
     }
 
