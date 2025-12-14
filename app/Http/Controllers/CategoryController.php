@@ -61,7 +61,7 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        $category->load(['images.media', 'featuredImage.media']);
+        $category->load(['images', 'featuredImage']);
 
         return Inertia::render('CategoryGallery', ['category' => (new CategoryResource($category))->resolve()]);
     }
@@ -71,8 +71,8 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        $category->load(['images.media', 'featuredImage.media']);
-        $images = \App\Models\Image::with('media')->where('user_id', auth()->id())->get();
+        $category->load(['images', 'featuredImage']);
+        $images = \App\Models\Image::where('user_id', auth()->id())->get();
 
         return Inertia::render('EditCategory', [
             'category' => new CategoryResource($category),

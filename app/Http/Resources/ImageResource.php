@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ImageResource extends JsonResource
 {
@@ -19,8 +20,7 @@ class ImageResource extends JsonResource
             'user_id' => $this->user_id,
             'filename' => $this->filename,
             'original_filename' => $this->original_filename,
-            'versions' => $this->versions,
-            'picture_sources' => $this->picture_sources,
+            'path' => $this->path,
             'size' => $this->size,
             'mime_type' => $this->mime_type,
             'width' => $this->width,
@@ -32,8 +32,7 @@ class ImageResource extends JsonResource
                     'name' => $category->name,
                 ];
             }),
-            'image_url' => $this->getFirstMediaUrl(),
-
+            'image_url' => $this->path ? Storage::url($this->path) : null,
         ];
     }
 }
