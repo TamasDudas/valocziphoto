@@ -26,7 +26,7 @@ class CategoryResource extends JsonResource
             'images' => $this->whenLoaded('images', function () {
                 return ImageResource::collection($this->images)->resolve();
             }),
-            'images_count' => $this->whenLoaded('images', fn() => $this->images->count()),
+            'images_count' => $this->whenLoaded('images', fn () => $this->images->count()),
         ];
     }
 }

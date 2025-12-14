@@ -29,22 +29,29 @@ export default function UploadeImageForm({ categories }: Props) {
             return;
         }
 
-        // Felhalmozzuk a képeket a meglévőkhöz
         setImages((prev) => [...prev, ...selectedFiles]);
 
-        const promises = selectedFiles.map((file) => {
-            return new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result as string);
-                reader.readAsDataURL(file);
+        const promises = selectedFiles.map(
+            (file) =>
+                new Promise<string>((resolve, reject) => {
+                    // reject is hasznos lehet
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = () =>
+                        reject(new Error('Fájl olvasási hiba')); // Hibakezelés
+                    reader.readAsDataURL(file);
+                }),
+        );
+
+        Promise.all(promises)
+            .then((results) => {
+                setPreviews((prev) => [...prev, ...results]);
+            })
+            .catch((error) => {
+                console.error('Hiba a képek betöltésekor:', error);
+                // Itt kezelheted a hibát, pl. toast notification
             });
-        });
 
-        Promise.all(promises).then((results) => {
-            setPreviews((prev) => [...prev, ...results]);
-        });
-
-        // Input mező kiürítése, hogy újra lehessen választani
         e.target.value = '';
     };
 
@@ -119,7 +126,7 @@ export default function UploadeImageForm({ categories }: Props) {
                 {previews.length > 0 && (
                     <div className="mt-4">
                         <Label>Kiválasztott képek ({previews.length}):</Label>
-                        <div className="mt-2 grid grid-cols-2 gap-4">
+                        <div className="mt-2 grid grid-cols-4 gap-4">
                             {previews.map((preview, index) => (
                                 <div key={index} className="relative">
                                     <img

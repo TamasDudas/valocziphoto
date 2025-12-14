@@ -10,7 +10,6 @@ class Category extends Model
     /** @use HasFactory<\Database\Factories\CategoryFactory> */
     use HasFactory;
 
-
     protected $fillable = [
         'name',
         'slug',
@@ -33,5 +32,4 @@ class Category extends Model
     {
         return $this->belongsTo(Image::class, 'featured_image_id');
     }
-
 }

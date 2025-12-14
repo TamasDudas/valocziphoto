@@ -33,7 +33,7 @@ class ImageResource extends JsonResource
                 ];
             }),
             'image_url' => $this->getFirstMediaUrl(),
-            
+
         ];
     }
 }

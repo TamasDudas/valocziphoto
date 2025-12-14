@@ -18,8 +18,8 @@ class ImageFactory extends Factory
     {
         return [
             'user_id' => \App\Models\User::factory(),
-            'filename' => $this->faker->word . '.jpg',
-            'original_filename' => $this->faker->word . '.jpg',
+            'filename' => $this->faker->word.'.jpg',
+            'original_filename' => $this->faker->word.'.jpg',
             'versions' => json_encode(['thumbnail', 'medium', 'large']),
             'size' => $this->faker->numberBetween(1000, 1000000),
             'mime_type' => 'image/jpeg',

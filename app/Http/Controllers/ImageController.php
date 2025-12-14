@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use App\Models\Image;
+use App\Http\Resources\ImageResource;
 use App\Models\Category;
-use Illuminate\Support\Str;
+use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Http\Resources\ImageResource;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ImageController extends Controller
 {
@@ -29,6 +29,7 @@ class ImageController extends Controller
     public function create()
     {
         $categories = Category::where('user_id', auth()->id())->get();
+
         return Inertia::render('CreateGalleryImage', ['categories' => $categories]);
     }
 
@@ -49,11 +50,11 @@ class ImageController extends Controller
             $imageFiles = $request->file('images');
             $altText = $validated['alt_text'] ?? null;
 
-            Log::info('Files received: ' . count($imageFiles));
-            Log::info('Request all: ' . json_encode($request->all()));
+            Log::info('Files received: '.count($imageFiles));
+            Log::info('Request all: '.json_encode($request->all()));
 
             foreach ($imageFiles as $imageFile) {
-                $uniqueFilename = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+                $uniqueFilename = Str::uuid().'.'.$imageFile->getClientOriginalExtension();
 
                 // Létrehozzuk az Image rekordot alapadatokkal
                 $image = Image::create([
@@ -70,21 +71,28 @@ class ImageController extends Controller
 
                 // Spatie MediaLibrary hozzáadása
                 $image->addMedia($imageFile->getPathname())
-                      ->usingName($imageFile->getClientOriginalName())
-                      ->usingFileName($uniqueFilename)
-                      ->toMediaCollection();
+                    ->usingName($imageFile->getClientOriginalName())
+                    ->usingFileName($uniqueFilename)
+                    ->toMediaCollection();
 
                 if (isset($validated['category_ids'])) {
                     $image->categories()->sync($validated['category_ids']);
                 }
             }
 
+            // Temp fájlok törlése sikeres feltöltés után
+            $this->cleanupTempFiles();
+
             return redirect()->route('images.index')->with('success', 'Kép sikeresen feltöltve!');
         } catch (\Exception $e) {
             Log::error('Hiba a kép feltöltésekor', ['error' => $e->getMessage()]);
+
+            // Temp fájlok törlése hiba esetén
+            $this->cleanupTempFiles();
+
             return redirect()->back()
-                             ->withErrors(['error' => 'Váratlan hiba történt: ' . $e->getMessage()])
-                             ->withInput();
+                ->withErrors(['error' => 'Váratlan hiba történt: '.$e->getMessage()])
+                ->withInput();
         }
     }
 
@@ -94,6 +102,7 @@ class ImageController extends Controller
     public function show(Image $image)
     {
         $this->authorize('view', $image);
+
         return Inertia::render('Image', ['image' => new ImageResource($image)]);
     }
 
@@ -103,6 +112,7 @@ class ImageController extends Controller
     public function edit(Image $image)
     {
         $this->authorize('update', $image);
+
         return Inertia::render('EditImage', ['image' => new ImageResource($image)]);
     }
 
@@ -135,9 +145,10 @@ class ImageController extends Controller
             return redirect()->back()->with('success', 'Kép sikeresen frissítve!');
         } catch (\Exception $e) {
             Log::error('Hiba a kép frissítésekor', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                             ->withErrors(['error' => 'Váratlan hiba történt: ' . $e->getMessage()])
-                             ->withInput();
+                ->withErrors(['error' => 'Váratlan hiba történt: '.$e->getMessage()])
+                ->withInput();
         }
     }
 
@@ -151,10 +162,66 @@ class ImageController extends Controller
         try {
             $image->delete();
 
+            // Temp fájlok törlése kép törlés után
+            $this->cleanupTempFiles();
+
             return redirect()->back()->with('success', 'A kép sikeresen törölve!');
         } catch (\Exception $e) {
             Log::error('Hiba a kép törlésekor', ['error' => $e->getMessage()]);
+
             return redirect()->back()->withErrors(['error' => 'Hiba történt a törlés során.']);
         }
+    }
+
+    /**
+     * Törli az árva temp fájlokat a media-library temp könyvtárból
+     */
+    private function cleanupTempFiles()
+    {
+        $tempPath = storage_path('app/media-library/temp');
+
+        if (is_dir($tempPath)) {
+            $files = glob($tempPath . '/*');
+            foreach ($files as $file) {
+                if (is_dir($file)) {
+                    // Rekurzívan töröljük a könyvtárat és tartalmát
+                    $this->deleteDirectory($file);
+                } else {
+                    unlink($file);
+                }
+            }
+        }
+    }
+
+    /**
+     * Rekurzívan töröl egy könyvtárat és tartalmát
+     */
+    private function deleteDirectory($dir)
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            if (is_dir($path)) {
+                $this->deleteDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+
+        rmdir($dir);
+    }
+
+    /**
+     * Manuális temp fájl cleanup (opcionális route)
+     */
+    public function cleanup()
+    {
+        $this->cleanupTempFiles();
+
+        return redirect()->back()->with('success', 'Temp fájlok sikeresen törölve!');
     }
 }

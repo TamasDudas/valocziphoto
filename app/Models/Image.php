@@ -12,6 +12,7 @@ class Image extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\ImageFactory> */
     use HasFactory;
+
     use InteractsWithMedia;
 
     protected $fillable = [
