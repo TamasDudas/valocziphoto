@@ -16,7 +16,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::withCount('images')->get();
 
         return Inertia::render('Categories', ['categories' => CategoryResource::collection($categories)]);
     }

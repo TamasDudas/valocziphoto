@@ -1,4 +1,3 @@
-import { store } from '@/actions/App/Http/Controllers/ImageController';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -95,7 +94,7 @@ export default function UploadeImageForm({ categories }: Props) {
             formData.append('category_ids[]', id.toString());
         });
 
-        router.post(store().url, formData, {
+        router.post('/images', formData, {
             onSuccess: () => {
                 setImages([]);
                 setAltText('');
