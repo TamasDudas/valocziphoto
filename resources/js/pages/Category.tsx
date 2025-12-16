@@ -32,8 +32,12 @@ interface Category {
 }
 
 export default function CategoryGallery() {
-    const { category } = usePage<{ category: Category }>().props;
+    const { category, auth } = usePage<{
+        category: Category;
+        auth: { user?: any };
+    }>().props;
     const [imageToRemove, setImageToRemove] = useState<Image | null>(null);
+    const [categoryToDelete, setCategoryToDelete] = useState(false);
 
     // Szűrjük ki a kiemelt képet a többi közül
     const otherImages =
@@ -58,6 +62,14 @@ export default function CategoryGallery() {
         );
     };
 
+    const confirmDeleteCategory = () => {
+        router.delete(`/categories/${category.id}`, {
+            onSuccess: () => {
+                router.visit('/categories');
+            },
+        });
+    };
+
     return (
         <AppLayout>
             <Head title={category?.name || 'Kategória'} />
@@ -66,14 +78,27 @@ export default function CategoryGallery() {
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
                         <div className="p-6">
                             {/* Kategória fejléc */}
-                            <div className="mb-8">
-                                <h1 className="mb-2 text-3xl font-bold">
-                                    {category?.name || 'Kategória név hiányzik'}
-                                </h1>
-                                {category?.description && (
-                                    <p className="text-gray-600 dark:text-gray-400">
-                                        {category.description}
-                                    </p>
+                            <div className="mb-8 flex items-center justify-between">
+                                <div>
+                                    <h1 className="mb-2 text-3xl font-bold">
+                                        {category?.name ||
+                                            'Kategória név hiányzik'}
+                                    </h1>
+                                    {category?.description && (
+                                        <p className="text-gray-600 dark:text-gray-400">
+                                            {category.description}
+                                        </p>
+                                    )}
+                                </div>
+                                {auth.user && (
+                                    <Button
+                                        onClick={() =>
+                                            setCategoryToDelete(true)
+                                        }
+                                        variant="destructive"
+                                    >
+                                        Kategória törlése
+                                    </Button>
                                 )}
                             </div>
 
@@ -127,18 +152,20 @@ export default function CategoryGallery() {
                                                             image.original_filename
                                                         }
                                                     </p>
-                                                    <Button
-                                                        onClick={() =>
-                                                            setImageToRemove(
-                                                                image,
-                                                            )
-                                                        }
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        className="mt-2 w-full"
-                                                    >
-                                                        Eltávolítás
-                                                    </Button>
+                                                    {auth.user && (
+                                                        <Button
+                                                            onClick={() =>
+                                                                setImageToRemove(
+                                                                    image,
+                                                                )
+                                                            }
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            className="mt-2 w-full"
+                                                        >
+                                                            Eltávolítás
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -183,6 +210,34 @@ export default function CategoryGallery() {
                         <AlertDialogCancel>Mégse</AlertDialogCancel>
                         <AlertDialogAction onClick={confirmRemoveImage}>
                             Eltávolítás
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* AlertDialog a kategória törlésének megerősítéséhez */}
+            <AlertDialog
+                open={categoryToDelete}
+                onOpenChange={setCategoryToDelete}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Biztosan törlöd a kategóriát?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Törlöd ezt a kategóriát:{' '}
+                            <strong>{category?.name}</strong>
+                            <br />
+                            <br />
+                            Ez a művelet nem vonható vissza. A kategória
+                            törlésre kerül, de a képek megmaradnak a galériában.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Mégse</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDeleteCategory}>
+                            Kategória törlése
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -51,7 +51,7 @@ class ImageController extends Controller
         try {
             $validated = $request->validate([
                 'images' => 'required|array',
-                'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp,avif|max:800',
+                'images.*' => ['image', 'max:1500'],
                 'alt_text' => 'nullable|string|max:255',
                 'category_ids' => 'array',
                 'category_ids.*' => 'exists:categories,id',
@@ -76,6 +76,9 @@ class ImageController extends Controller
                 // Az storeAs() visszaadja a relatív útvonalat: 'images/550e8400...jpg'
                 $path = $imageFile->storeAs('images', $uniqueFilename, 'public');
 
+                // Kép dimenziók lekérése (csak egyszer hívjuk meg)
+                $imageSize = getimagesize($imageFile);
+
                 // Adatbázis rekord létrehozása az images táblában
                 // Tároljuk a kép metaadatait: méret, mime type, dimenziók, stb.
                 $image = Image::create([
@@ -84,28 +87,23 @@ class ImageController extends Controller
                     'original_filename' => $imageFile->getClientOriginalName(),
                     'size' => $imageFile->getSize(),
                     'mime_type' => $imageFile->getMimeType(),
-                    'width' => getimagesize($imageFile)[0] ?? null,
-                    'height' => getimagesize($imageFile)[1] ?? null,
+                    'width' => $imageSize[0] ?? null,
+                    'height' => $imageSize[1] ?? null,
                     'alt_text' => $altText,
                     'path' => $path,
                 ]);
 
-                // Ha a user kiválasztott kategóriákat, hozzárendeljük a képet a kategóriákhoz
-                // sync() törli a régi kapcsolatokat és létrehozza az újakat a pivot táblában
-                if (isset($validated['category_ids'])) {
-                    $image->categories()->sync($validated['category_ids']);
-                }
+                // sync() a many-to-many kapcsolathoz: frissíti a pivot táblát (category_image)
+                // - Törli azokat a kapcsolatokat, amik NINCSENEK a megadott tömbben
+                // - Hozzáadja azokat, amik nincsenek még bent de a tömbben vannak
+                // - Megtartja azokat, amik már bent vannak és a tömbben is
+                // Üres tömbbel ([]) törli az összes kapcsolatot
+                $image->categories()->sync($validated['category_ids'] ?? []);
             }
-
-            // Temp fájlok törlése sikeres feltöltés után
-            $this->cleanupTempFiles();
 
             return redirect()->route('images.index')->with('success', 'Kép sikeresen feltöltve!');
         } catch (\Exception $e) {
-            Log::error('Hiba a kép feltöltésekor', ['error' => $e->getMessage()]);
-
-            // Temp fájlok törlése hiba esetén
-            $this->cleanupTempFiles();
+            
 
             return redirect()->back()
                 ->withErrors(['error' => 'Váratlan hiba történt: '.$e->getMessage()])
@@ -155,9 +153,9 @@ class ImageController extends Controller
 
             $image->update($validated);
 
-            if (isset($validated['category_ids'])) {
-                $image->categories()->sync($validated['category_ids']);
-            }
+            // sync() szinkronizálja a kategória kapcsolatokat a pivot táblában
+            // Ha nincs category_ids a requestben, üres tömb megy és minden kapcsolat törlődik
+            $image->categories()->sync($validated['category_ids'] ?? []);
 
             return redirect()->back()->with('success', 'Kép sikeresen frissítve!');
         } catch (\Exception $e) {
@@ -187,9 +185,6 @@ class ImageController extends Controller
 
             $image->delete();
 
-            // Temp fájlok törlése kép törlés után
-            $this->cleanupTempFiles();
-
             return redirect()->back()->with('success', 'A kép sikeresen törölve!');
         } catch (\Exception $e) {
             Log::error('Hiba a kép törlésekor', ['error' => $e->getMessage()]);
@@ -198,55 +193,4 @@ class ImageController extends Controller
         }
     }
 
-    /**
-     * Törli az árva temp fájlokat a media-library temp könyvtárból
-     */
-    private function cleanupTempFiles()
-    {
-        $tempPath = storage_path('app/media-library/temp');
-
-        if (is_dir($tempPath)) {
-            $files = glob($tempPath . '/*');
-            foreach ($files as $file) {
-                if (is_dir($file)) {
-                    // Rekurzívan töröljük a könyvtárat és tartalmát
-                    $this->deleteDirectory($file);
-                } else {
-                    unlink($file);
-                }
-            }
-        }
-    }
-
-    /**
-     * Rekurzívan töröl egy könyvtárat és tartalmát
-     */
-    private function deleteDirectory($dir)
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $files = array_diff(scandir($dir), ['.', '..']);
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            if (is_dir($path)) {
-                $this->deleteDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($dir);
-    }
-
-    /**
-     * Manuális temp fájl cleanup (opcionális route)
-     */
-    public function cleanup()
-    {
-        $this->cleanupTempFiles();
-
-        return redirect()->back()->with('success', 'Temp fájlok sikeresen törölve!');
-    }
 }

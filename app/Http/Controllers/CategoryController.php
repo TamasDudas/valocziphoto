@@ -18,7 +18,10 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::withCount('images')->get();
+        // Minden kategória látható (publikus lista)
+        $categories = Category::withCount('images')
+            ->with('featuredImage')
+            ->get();
 
         return Inertia::render('Categories', ['categories' => CategoryResource::collection($categories)]);
     }
@@ -63,6 +66,7 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
+        // Publikus kategória megtekintés - bárki láthatja
         $category->load(['images', 'featuredImage']);
 
         return Inertia::render('Category', ['category' => (new CategoryResource($category))->resolve()]);
@@ -73,11 +77,16 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
+        // Ellenőrizzük hogy a felhasználó tulajdonosa-e a kategóriának
+        if ($category->user_id !== auth()->id()) {
+            abort(403, 'Nem szerkesztheted mások kategóriáit.');
+        }
+
         $category->load(['images', 'featuredImage']);
         $images = Image::where('user_id', auth()->id())->get();
 
         return Inertia::render('EditCategory', [
-            'category' => new CategoryResource($category),
+            'category' => (new CategoryResource($category))->resolve(),
             'availableImages' => ImageResource::collection($images)->resolve(),
         ]);
     }
@@ -87,6 +96,11 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
+        // Ellenőrizzük hogy a felhasználó tulajdonosa-e a kategóriának
+        if ($category->user_id !== auth()->id()) {
+            abort(403, 'Nem frissítheted mások kategóriáit.');
+        }
+
         try {
             $validated = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
@@ -95,8 +109,9 @@ class CategoryController extends Controller
                 'featured_image_id' => 'nullable|exists:images,id',
             ]);
 
-            if (isset($validated['name'])) {
-                $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
+            // Ha új név érkezik de nincs slug, generáljuk a slug-ot a névből
+            if (isset($validated['name']) && !isset($validated['slug'])) {
+                $validated['slug'] = Str::slug($validated['name']);
             }
 
             $category->update($validated);
@@ -116,6 +131,11 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
+        // Ellenőrizzük hogy a felhasználó tulajdonosa-e a kategóriának
+        if ($category->user_id !== auth()->id()) {
+            abort(403, 'Nem törölheted mások kategóriáit.');
+        }
+
         try {
             $category->delete();
 
@@ -133,13 +153,19 @@ class CategoryController extends Controller
      */
     public function attachImages(Request $request, Category $category)
     {
+        // Ellenőrizzük hogy a felhasználó tulajdonosa-e a kategóriának
+        if ($category->user_id !== auth()->id()) {
+            abort(403, 'Nem adhatsz képeket mások kategóriáihoz.');
+        }
+
         try {
             $validated = $request->validate([
                 'image_ids' => 'required|array',
                 'image_ids.*' => 'exists:images,id',
             ]);
 
-            // Hozzáadja a képeket a kategóriához (duplikáció nélkül)
+            // syncWithoutDetaching() hozzáadja az új képeket duplikáció nélkül
+            // Meglévő kapcsolatokat megtartja, csak az új képeket adja hozzá
             $category->images()->syncWithoutDetaching($validated['image_ids']);
 
             return redirect()->back()->with('success', 'Képek sikeresen hozzáadva a kategóriához!');
@@ -156,12 +182,18 @@ class CategoryController extends Controller
      */
     public function detachImage(Request $request, Category $category)
     {
+        // Ellenőrizzük hogy a felhasználó tulajdonosa-e a kategóriának
+        if ($category->user_id !== auth()->id()) {
+            abort(403, 'Nem távolíthatsz el képeket mások kategóriáiból.');
+        }
+
         try {
             $validated = $request->validate([
                 'image_id' => 'required|exists:images,id',
             ]);
 
-            // Eltávolítja a képet a kategóriából (a galériában megmarad)
+            // detach() eltávolítja a kapcsolatot a pivot táblából
+            // A kép a galériában megmarad, csak a kategóriából lesz eltávolítva
             $category->images()->detach($validated['image_id']);
 
             return redirect()->back()->with('success', 'Kép sikeresen eltávolítva a kategóriából!');

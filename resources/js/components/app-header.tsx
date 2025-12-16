@@ -64,7 +64,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const getInitials = useInitials();
     const displayNavItems = auth.user
         ? mainNavItems
-        : mainNavItems.filter((item) => !['Dashboard'].includes(item.title));
+        : mainNavItems.filter(
+              (item) => !['Dashboard', 'Galéria'].includes(item.title),
+          );
     return (
         <>
             <div className="border-b border-sidebar-border/80">
