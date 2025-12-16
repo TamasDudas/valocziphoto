@@ -19,6 +19,11 @@ class ImageController extends Controller
     public function index()
     {
         $images = Image::with('categories')->where('user_id', auth()->id())->get();
+        
+        // resolve() azonnal PHP tömbbé konvertálja a Resource Collection-t.
+        // Nélküle ResourceCollection objektumot kapnánk, ami később problémát okozhat
+        // az Inertia props feldolgozásakor. A resolve() biztosítja hogy tiszta
+        // PHP array megy át a frontend-nek JSON-ként.
         $imagesArray = ImageResource::collection($images)->resolve();
         $categories = Category::where('user_id', auth()->id())->get();
 
@@ -52,19 +57,27 @@ class ImageController extends Controller
                 'category_ids.*' => 'exists:categories,id',
             ]);
 
+            // A frontendről érkező File objektumok kinyerése a requestből
+            // Ez egy tömb, mert multiple upload van engedélyezve
             $imageFiles = $request->file('images');
+            
+            // Alt text kinyerése a validált adatokból, vagy null ha nem adtak meg
             $altText = $validated['alt_text'] ?? null;
 
-            Log::info('Files received: '.count($imageFiles));
-            Log::info('Request all: '.json_encode($request->all()));
-
+    
+            // Végigmegyünk minden feltöltött képen és egyesével mentjük őket
             foreach ($imageFiles as $imageFile) {
+                // Egyedi fájlnév generálása UUID-val, hogy ne legyen névütközés
+                // Például: 550e8400-e29b-41d4-a716-446655440000.jpg
                 $uniqueFilename = Str::uuid().'.'.$imageFile->getClientOriginalExtension();
 
-                // Kép mentése storage/app/public/images könyvtárba
+                // Fizikai fájl mentése storage/app/public/images könyvtárba
+                // A 'public' disk a config/filesystems.php-ban van definiálva
+                // Az storeAs() visszaadja a relatív útvonalat: 'images/550e8400...jpg'
                 $path = $imageFile->storeAs('images', $uniqueFilename, 'public');
 
-                // Image rekord létrehozása
+                // Adatbázis rekord létrehozása az images táblában
+                // Tároljuk a kép metaadatait: méret, mime type, dimenziók, stb.
                 $image = Image::create([
                     'user_id' => auth()->id(),
                     'filename' => $uniqueFilename,
@@ -77,6 +90,8 @@ class ImageController extends Controller
                     'path' => $path,
                 ]);
 
+                // Ha a user kiválasztott kategóriákat, hozzárendeljük a képet a kategóriákhoz
+                // sync() törli a régi kapcsolatokat és létrehozza az újakat a pivot táblában
                 if (isset($validated['category_ids'])) {
                     $image->categories()->sync($validated['category_ids']);
                 }
