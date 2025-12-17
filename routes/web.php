@@ -1,19 +1,28 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ImageController;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use Illuminate\Support\Facades\Route;
+use App\Http\Resources\CategoryResource;
+use App\Http\Controllers\ImageController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/', function () {
+    $categories = \App\Models\Category::withCount('images')
+        ->with('featuredImage')
+        ->get();
+
     return Inertia::render('Home', [
         'canRegister' => Features::enabled(Features::registration()),
+        'categories' => CategoryResource::collection($categories),
     ]);
 })->name('home');
 
-// Publikus kategória route-ok (bárki láthatja)
-Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+// Kapcsolat oldal (publikus)
+Route::get('kapcsolat', function () {
+    return Inertia::render('Contact');
+})->name('contact');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
@@ -42,5 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Publikus kategória megtekintés - A VÉGÉN hogy ne ütközzön a create-tel
 Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+
+Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
 
 require __DIR__.'/settings.php';

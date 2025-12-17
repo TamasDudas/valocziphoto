@@ -5,15 +5,15 @@ import { type BreadcrumbItem } from '@/types';
 import type { PropsWithChildren } from 'react';
 
 export default function AppHeaderLayout({
-    children,
-    breadcrumbs,
+  children,
+  breadcrumbs,
 }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
-    return (
-        <AppShell>
-            <AppHeader breadcrumbs={breadcrumbs} />
-            <div className="p-4">
-                <AppContent>{children}</AppContent>
-            </div>
-        </AppShell>
-    );
+  return (
+    <AppShell>
+      <AppHeader breadcrumbs={breadcrumbs} />
+      <div className="container mx-auto px-4 py-8">
+        <AppContent>{children}</AppContent>
+      </div>
+    </AppShell>
+  );
 }

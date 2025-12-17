@@ -75,8 +75,8 @@ export default function CategoryGallery() {
   return (
     <AppLayout>
       <Head title={category?.name || 'Kategória'} />
-      <div className="py-12">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <div>
+        <div className="mx-auto max-w-7xl">
           <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
             <div className="p-6">
               {/* Kategória fejléc */}

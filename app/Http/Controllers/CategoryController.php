@@ -23,7 +23,7 @@ class CategoryController extends Controller
             ->with('featuredImage')
             ->get();
 
-        return Inertia::render('Categories', ['categories' => CategoryResource::collection($categories)]);
+        return Inertia::render('Home', ['categories' => CategoryResource::collection($categories)]);
     }
 
     /**
@@ -53,8 +53,7 @@ class CategoryController extends Controller
 
             return redirect()->back()->with('success', 'Kategória sikeresen létrehozva!');
         } catch (\Exception $e) {
-            Log::error('Hiba a kategória létrehozásakor', ['error' => $e->getMessage()]);
-
+        
             return redirect()->back()
                 ->withErrors(['error' => 'Váratlan hiba történt: '.$e->getMessage()])
                 ->withInput();
