@@ -77,7 +77,7 @@ export default function CategoryGallery() {
       <Head title={category?.name || 'Kategória'} />
       <div>
         <div className="mx-auto max-w-7xl">
-          <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+          <div className="overflow-hidden shadow-sm sm:rounded-lg">
             <div className="p-6">
               {/* Kategória fejléc */}
               <div className="mb-8 flex items-center justify-between">
