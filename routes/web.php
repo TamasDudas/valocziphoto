@@ -14,7 +14,6 @@ Route::get('/', function () {
 
 // Publikus kategória route-ok (bárki láthatja)
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
-Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
@@ -29,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('images/{image}', [ImageController::class, 'destroy'])->name('images.destroy');
 
     // Categories kezelés (csak bejelentkezett userek)
+    // FONTOS: create ELŐBB mint {category} különben "create" kategória ID-nek számít
     Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
     Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
@@ -39,5 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('categories/{category}/attach-images', [CategoryController::class, 'attachImages'])->name('categories.attach-images');
     Route::post('categories/{category}/detach-image', [CategoryController::class, 'detachImage'])->name('categories.detach-image');
 });
+
+// Publikus kategória megtekintés - A VÉGÉN hogy ne ütközzön a create-tel
+Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
 require __DIR__.'/settings.php';
