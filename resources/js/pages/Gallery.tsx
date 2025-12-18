@@ -115,13 +115,13 @@ export default function Gallery() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
             {/* Képek grid */}
             <div className="lg:col-span-3">
-              <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+              <div className="overflow-hidden shadow-xl sm:rounded-lg">
                 <div className="p-6">
                   <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-bold">Galéria</h2>
                     <Link
                       href={create().url}
-                      className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
+                      className="rounded px-4 py-2 font-bold text-white dark:bg-chart-5 hover:dark:bg-secondary"
                     >
                       Új kép feltöltése
                     </Link>

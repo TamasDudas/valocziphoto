@@ -108,72 +108,79 @@ export default function UploadeImageForm({ categories }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="images">Képek feltöltése (több választható)</Label>
-        <Input
-          id="images"
-          type="file"
-          name="images[]"
-          accept="image/*"
-          multiple
-          onChange={handleFileChange}
-        />
-        {previews.length > 0 && (
-          <div className="mt-4">
-            <Label>Kiválasztott képek ({previews.length}):</Label>
-            <div className="mt-2 grid grid-cols-4 gap-4">
-              {previews.map((preview, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={preview}
-                    alt={`Előnézet ${index + 1}`}
-                    className="max-h-32 w-full rounded border object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+    <div className="flex w-full flex-col items-center justify-center py-8">
+      <form
+        onSubmit={handleSubmit}
+        className="flex w-full max-w-xl flex-col gap-4"
+      >
+        <div>
+          <Label htmlFor="images">Képek feltöltése (több választható)</Label>
+          <Input
+            id="images"
+            type="file"
+            name="images[]"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+          />
+          {previews.length > 0 && (
+            <div className="mt-4">
+              <Label>Kiválasztott képek ({previews.length}):</Label>
+              <div className="mt-2 grid grid-cols-4 gap-4">
+                {previews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`Előnézet ${index + 1}`}
+                      className="max-h-32 w-full rounded border object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="alt_text">Alternatív szöveg</Label>
-        <Input
-          id="alt_text"
-          type="text"
-          value={altText}
-          onChange={(e) => setAltText(e.target.value)}
-          placeholder="Kép leírása"
-        />
-      </div>
-      <div>
-        <Label>Kategóriák (több választható)</Label>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div key={category.id} className="flex items-center space-x-2">
-              <Checkbox
-                id={`category-${category.id}`}
-                checked={categoryIds.includes(category.id)}
-                onCheckedChange={(checked) =>
-                  handleCategoryChange(category.id, checked as boolean)
-                }
-              />
-              <Label htmlFor={`category-${category.id}`}>{category.name}</Label>
-            </div>
-          ))}
+          )}
         </div>
-      </div>
+        <div>
+          <Label htmlFor="alt_text">Alternatív szöveg</Label>
+          <Input
+            id="alt_text"
+            type="text"
+            value={altText}
+            onChange={(e) => setAltText(e.target.value)}
+            placeholder="Kép leírása"
+          />
+        </div>
+        <div>
+          <Label>Kategóriák (több választható)</Label>
+          <div className="space-y-2">
+            {categories.map((category) => (
+              <div key={category.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`category-${category.id}`}
+                  checked={categoryIds.includes(category.id)}
+                  onCheckedChange={(checked) =>
+                    handleCategoryChange(category.id, checked as boolean)
+                  }
+                />
+                <Label htmlFor={`category-${category.id}`}>
+                  {category.name}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      <Button type="submit" disabled={processing}>
-        {processing ? 'Feltöltés...' : 'Feltöltés'}
-      </Button>
-    </form>
+        <Button type="submit" disabled={processing}>
+          {processing ? 'Feltöltés...' : 'Feltöltés'}
+        </Button>
+      </form>
+    </div>
   );
 }

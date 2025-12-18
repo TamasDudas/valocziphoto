@@ -52,7 +52,7 @@ const mainNavItems: NavItem[] = [
 ];
 
 const activeItemStyles =
-  'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
+  'text-neutral-900 dark:bg-chart-5 dark:text-neutral-100';
 
 interface AppHeaderProps {
   breadcrumbs?: BreadcrumbItem[];
