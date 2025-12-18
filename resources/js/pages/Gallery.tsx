@@ -130,7 +130,7 @@ export default function Gallery() {
                     {imageList.map((image) => (
                       <div
                         key={image.id}
-                        className="relative rounded bg-gray-100 p-4 dark:bg-gray-700"
+                        className="relative rounded bg-input p-4"
                       >
                         <div className="absolute top-2 right-2">
                           <Checkbox
@@ -160,7 +160,7 @@ export default function Gallery() {
                               setSelectedImage(image);
                               setIsModalOpen(true);
                             }}
-                            className="flex-1 rounded bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600"
+                            className="flex-1 rounded bg-primary-foreground px-3 py-1 text-sm text-white hover:bg-popover"
                           >
                             Kiemelt kép
                           </button>
@@ -187,7 +187,7 @@ export default function Gallery() {
 
             {/* Kategóriák panel - alapból látható */}
             <div className="lg:col-span-1">
-              <div className="sticky top-6 overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+              <div className="sticky top-6 overflow-hidden bg-border shadow-sm sm:rounded-lg">
                 <div className="p-6">
                   <h3 className="mb-4 text-lg font-semibold">Kategóriák</h3>
                   {selectedImages.length > 0 ? (
@@ -201,8 +201,8 @@ export default function Gallery() {
                           <Button
                             key={category.id}
                             onClick={() => handleAttachToCategory(category.id)}
-                            className="w-full justify-start"
-                            variant="outline"
+                            className="w-full justify-start bg-primary-foreground"
+                            variant="ghost"
                           >
                             {category.name}
                           </Button>

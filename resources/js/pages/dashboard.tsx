@@ -17,13 +17,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Link
           href="/images/create"
-          className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+          className="rounded-lg border bg-popover p-6 shadow-sm transition-shadow hover:bg-input hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Kép feltöltése</h2>
         </Link>
         <Link
           href="/categories/create"
-          className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+          className="rounded-lg border bg-popover p-6 shadow-sm transition-shadow hover:bg-input hover:shadow-md"
         >
           <h2 className="text-xl font-semibold">Kategória létrehozása</h2>
         </Link>

@@ -1,3 +1,4 @@
+import boritoKep from '@/assets/images/borito.jpg';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
 
@@ -26,6 +27,13 @@ export default function Home({ canRegister = true, categories }: Props) {
   return (
     <AppLayout>
       <Head title="Valóczi Photo" />
+      <div className="h-52 w-full sm:h-44 md:h-80 lg:h-[28rem]">
+        <img
+          src={boritoKep}
+          alt="Borító kép"
+          className="h-full w-full rounded-2xl object-cover"
+        />
+      </div>
       <div>
         {categoryList.length === 0 ? (
           <p className="text-gray-500">Nincsenek kategóriák.</p>
