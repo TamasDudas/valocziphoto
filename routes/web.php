@@ -24,6 +24,17 @@ Route::get('kapcsolat', function () {
     return Inertia::render('Contact');
 })->name('contact');
 
+// Rólunk (publikus)
+Route::get('rolunk', function () {
+    return Inertia::render('AboutUs');
+})->name('aboutus');
+
+
+// ASZF (publikus)
+Route::get('aszf', function () {
+    return Inertia::render('Aszf');
+})->name('aszf');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('dashboard', function () {

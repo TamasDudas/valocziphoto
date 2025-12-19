@@ -11,7 +11,7 @@ export default function AppHeaderLayout({
   return (
     <AppShell>
       <AppHeader breadcrumbs={breadcrumbs} />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pt-8">
         <AppContent>{children}</AppContent>
       </div>
     </AppShell>

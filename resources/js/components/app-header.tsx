@@ -44,6 +44,10 @@ const mainNavItems: NavItem[] = [
     title: 'Kapcsolat',
     href: '/kapcsolat',
   },
+  {
+    title: 'Rólunk',
+    href: '/rolunk',
+  },
 
   {
     title: 'Galéria',
