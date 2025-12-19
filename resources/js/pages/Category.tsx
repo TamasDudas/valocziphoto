@@ -79,56 +79,55 @@ export default function CategoryGallery() {
         <div className="mx-auto max-w-7xl">
           <div className="overflow-hidden shadow-sm sm:rounded-lg">
             <div className="p-6">
-              {/* Kategória fejléc */}
-              <div className="mb-8 flex items-center justify-between">
-                <div>
-                  <h1 className="mb-2 text-3xl font-bold">
-                    {category?.name || 'Kategória név hiányzik'}
-                  </h1>
-                  {category?.description && (
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {category.description}
-                    </p>
-                  )}
-                </div>
-                {auth.user && (
+              {/* Kategória törlése gomb */}
+              {auth.user && (
+                <div className="mb-6 flex justify-end">
                   <Button
                     onClick={() => setCategoryToDelete(true)}
                     variant="destructive"
                   >
                     Kategória törlése
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Kiemelt kép */}
+              {/* Kiemelt kép felül */}
               {category.featured_image && (
-                <div className="mb-8">
-                  <h2 className="mb-4 text-xl font-semibold">Kiemelt kép</h2>
-                  <div className="overflow-hidden rounded-lg shadow-lg">
+                <div className="my-8">
+                  <div className="h-52 w-full overflow-hidden shadow-lg sm:h-44 md:h-80 lg:h-[32rem]">
                     <img
                       src={category.featured_image.image_url}
                       alt={
                         category.featured_image.alt_text ||
                         category.featured_image.original_filename
                       }
-                      className="h-96 w-full object-cover"
+                      className="h-full w-full rounded-2xl object-cover"
                     />
                   </div>
                 </div>
               )}
 
+              {/* Cím és leírás középen alatta */}
+              <div className="my-12 text-center">
+                <h1 className="mb-4 text-4xl font-bold">
+                  {category?.name || 'Kategória név hiányzik'}
+                </h1>
+                {category?.description && (
+                  <p className="px-60 dark:text-gray-200">
+                    {category.description}
+                  </p>
+                )}
+              </div>
+
               {/* Galéria */}
               {otherImages.length > 0 && (
                 <div>
-                  <h2 className="mb-4 text-xl font-semibold">
-                    Galéria ({otherImages.length} kép)
-                  </h2>
+                  <h2 className="mb-4 text-xl font-semibold">Galéria</h2>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
                     {otherImages.map((image) => (
                       <div
                         key={image.id}
-                        className="relative overflow-hidden rounded bg-gray-100 dark:bg-gray-700"
+                        className="relative overflow-hidden rounded bg-input"
                       >
                         <img
                           src={image.image_url}
