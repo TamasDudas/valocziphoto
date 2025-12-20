@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
 
 interface Image {
   id: number;
@@ -38,10 +40,11 @@ export default function CategoryGallery() {
   }>().props;
   const [imageToRemove, setImageToRemove] = useState<Image | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
 
   // Szűrjük ki a kiemelt képet a többi közül
   const otherImages =
-    category?.images?.filter((img) => img.id !== category.featured_image_id) ||
+    category?.images?.filter((img) => img.id !== category?.featured_image_id) ||
     [];
 
   const confirmRemoveImage = () => {
@@ -93,15 +96,15 @@ export default function CategoryGallery() {
 
               {/* Kiemelt kép felül */}
               {category.featured_image && (
-                <div className="my-8">
-                  <div className="h-52 w-full overflow-hidden shadow-lg sm:h-44 md:h-80 lg:h-[32rem]">
+                <div className="mt-6 mb-8">
+                  <div className="h-52 w-full overflow-hidden sm:h-44 md:h-80 lg:h-[32rem]">
                     <img
                       src={category.featured_image.image_url}
                       alt={
                         category.featured_image.alt_text ||
                         category.featured_image.original_filename
                       }
-                      className="h-full w-full rounded-2xl object-cover"
+                      className="h-full w-full rounded-2xl object-cover shadow-lg"
                     />
                   </div>
                 </div>
@@ -113,7 +116,7 @@ export default function CategoryGallery() {
                   {category?.name || 'Kategória név hiányzik'}
                 </h1>
                 {category?.description && (
-                  <p className="px-60 dark:text-gray-200">
+                  <p className="lg:px-60 dark:text-gray-200">
                     {category.description}
                   </p>
                 )}
@@ -123,16 +126,19 @@ export default function CategoryGallery() {
               {otherImages.length > 0 && (
                 <div>
                   <h2 className="mb-4 text-xl font-semibold">Galéria</h2>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {otherImages.map((image) => (
                       <div
                         key={image.id}
-                        className="relative overflow-hidden rounded bg-input"
+                        className="relative cursor-pointer overflow-hidden rounded bg-input transition-transform hover:scale-105"
+                        onClick={() =>
+                          setLightboxIndex(otherImages.indexOf(image))
+                        }
                       >
                         <img
                           src={image.image_url}
                           alt={image.alt_text || image.original_filename}
-                          className="h-48 w-full object-cover transition-transform hover:scale-105"
+                          className="h-48 w-full object-cover"
                         />
                         <div className="p-2">
                           <p className="truncate text-xs text-gray-600 dark:text-gray-400">
@@ -140,7 +146,10 @@ export default function CategoryGallery() {
                           </p>
                           {auth.user && (
                             <Button
-                              onClick={() => setImageToRemove(image)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setImageToRemove(image);
+                              }}
                               variant="destructive"
                               size="sm"
                               className="mt-2 w-full"
@@ -214,6 +223,18 @@ export default function CategoryGallery() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Lightbox */}
+      <Lightbox
+        open={lightboxIndex >= 0}
+        close={() => setLightboxIndex(-1)}
+        index={lightboxIndex}
+        slides={otherImages.map((image) => ({
+          src: image.image_url,
+          alt: image.alt_text || image.original_filename,
+          title: image.original_filename,
+        }))}
+      />
     </AppLayout>
   );
 }
