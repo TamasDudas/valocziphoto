@@ -7,6 +7,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SitemapController;
 
 Route::get('/', function () {
     $categories = \App\Models\Category::withCount('images')
@@ -64,5 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
 Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
+
+// Sitemap
+Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 require __DIR__.'/settings.php';
