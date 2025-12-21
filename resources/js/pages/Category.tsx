@@ -41,7 +41,6 @@ export default function CategoryGallery() {
     auth: { user?: any };
   }>().props;
   const [imageToRemove, setImageToRemove] = useState<Image | null>(null);
-  const [categoryToDelete, setCategoryToDelete] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
 
   // SEO meta adatok előkészítése
@@ -78,17 +77,6 @@ export default function CategoryGallery() {
     );
   };
 
-  const confirmDeleteCategory = () => {
-    router.delete(`/categories/${category.id}`, {
-      preserveState: false, // Ne őrizze meg az oldal állapotát
-      preserveScroll: false,
-      onSuccess: () => {
-        // Azonnali átirányítás, ne próbáljon betölteni semmit
-        window.location.href = '/categories';
-      },
-    });
-  };
-
   return (
     <AppLayout>
       <Head>
@@ -115,18 +103,6 @@ export default function CategoryGallery() {
         <div className="mx-auto max-w-7xl">
           <div className="overflow-hidden shadow-sm sm:rounded-lg">
             <div className="p-6">
-              {/* Kategória törlése gomb */}
-              {auth.user && (
-                <div className="mb-6 flex justify-end">
-                  <Button
-                    onClick={() => setCategoryToDelete(true)}
-                    variant="destructive"
-                  >
-                    Kategória törlése
-                  </Button>
-                </div>
-              )}
-
               {/* Kiemelt kép felül */}
               {category.featured_image && (
                 <div className="mt-6 mb-8">
@@ -230,28 +206,6 @@ export default function CategoryGallery() {
             <AlertDialogCancel>Mégse</AlertDialogCancel>
             <AlertDialogAction onClick={confirmRemoveImage}>
               Eltávolítás
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* AlertDialog a kategória törlésének megerősítéséhez */}
-      <AlertDialog open={categoryToDelete} onOpenChange={setCategoryToDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Biztosan törlöd a kategóriát?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Törlöd ezt a kategóriát: <strong>{category?.name}</strong>
-              <br />
-              <br />
-              Ez a művelet nem vonható vissza. A kategória törlésre kerül, de a
-              képek megmaradnak a galériában.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Mégse</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteCategory}>
-              Kategória törlése
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
