@@ -55,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::patch('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::get('categories', [CategoryController::class, 'handleCategories'])->name('all.categories');
 
     // Category képkezelés (csak bejelentkezett userek)
     Route::post('categories/{category}/attach-images', [CategoryController::class, 'attachImages'])->name('categories.attach-images');

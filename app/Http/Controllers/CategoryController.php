@@ -26,6 +26,12 @@ class CategoryController extends Controller
         return Inertia::render('Home', ['categories' => CategoryResource::collection($categories)]);
     }
 
+    public function handleCategories(){
+        $categories = Category::all();
+
+        return Inertia::render('Categories', ['categories'=>CategoryResource::collection($categories)]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */

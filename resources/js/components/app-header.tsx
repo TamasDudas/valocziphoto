@@ -48,11 +48,6 @@ const mainNavItems: NavItem[] = [
     title: 'Rólunk',
     href: '/rolunk',
   },
-
-  {
-    title: 'Galéria',
-    href: '/images',
-  },
 ];
 
 const activeItemStyles =
@@ -68,9 +63,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
   const getInitials = useInitials();
   const displayNavItems = auth.user
     ? mainNavItems
-    : mainNavItems.filter(
-        (item) => !['Dashboard', 'Galéria'].includes(item.title),
-      );
+    : mainNavItems.filter((item) => !['Dashboard'].includes(item.title));
   return (
     <>
       <div className="border-b border-sidebar-border/80">
