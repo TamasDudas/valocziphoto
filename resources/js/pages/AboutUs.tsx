@@ -1,10 +1,43 @@
 import aboutImage from '@/assets/images/ezster-es-laci.jpg';
 import Banner from '@/components/Banner';
 import AppLayout from '@/layouts/app-layout';
+import { Head } from '@inertiajs/react';
 
 export default function AboutUs() {
+  const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:8000';
+  const ogImageUrl = `${appUrl}${aboutImage}`;
+
   return (
     <AppLayout>
+      <Head>
+        <title>Rólunk - Valóczi Photo</title>
+        <meta
+          name="description"
+          content="Valóczi László és Kőhalmi Eszter - professzionális fotósok. Nem erőltetjük rád a saját elképzeléseinket, hanem azt keressük, ami Neked áll jól."
+        />
+
+        {/* Canonical URL */}
+        <link rel="canonical" href={`${appUrl}/rolunk`} />
+
+        {/* Open Graph */}
+        <meta property="og:title" content="Rólunk - Valóczi Photo" />
+        <meta
+          property="og:description"
+          content="Valóczi László és Kőhalmi Eszter - professzionális fotósok. Kreatív fotózás, ami Neked áll jól."
+        />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${appUrl}/rolunk`} />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Rólunk - Valóczi Photo" />
+        <meta
+          name="twitter:description"
+          content="Valóczi László és Kőhalmi Eszter - professzionális fotósok."
+        />
+        <meta name="twitter:image" content={ogImageUrl} />
+      </Head>
       <Banner
         aboutImage={aboutImage}
         title={'Profil'}

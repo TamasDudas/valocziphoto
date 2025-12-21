@@ -16,6 +16,8 @@ class Category extends Model
         'description',
         'user_id',
         'featured_image_id', // Az adatbázisban tárolt ID (pl. 5) - csak egy szám
+        'meta_title',
+        'meta_description',
     ];
 
     public function user()

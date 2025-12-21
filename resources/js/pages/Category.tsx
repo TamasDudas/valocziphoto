@@ -28,6 +28,8 @@ interface Category {
   name: string;
   slug: string;
   description: string;
+  meta_title?: string;
+  meta_description?: string;
   featured_image_id?: number;
   featured_image?: Image;
   images: Image[];
@@ -41,6 +43,18 @@ export default function CategoryGallery() {
   const [imageToRemove, setImageToRemove] = useState<Image | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number>(-1);
+
+  // SEO meta adatok előkészítése
+  const metaTitle = category?.meta_title || category?.name || 'Kategória';
+  const metaDescription =
+    category?.meta_description ||
+    category?.description ||
+    `${category?.name} - Valóczi Photo galéria`;
+  const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:8000';
+  const ogImageUrl = category?.featured_image
+    ? `${appUrl}${category.featured_image.image_url}`
+    : `${appUrl}/images/default-og.jpg`;
+  const canonicalUrl = `${appUrl}/categories/${category?.slug}`;
 
   // Szűrjük ki a kiemelt képet a többi közül
   const otherImages =
@@ -77,7 +91,26 @@ export default function CategoryGallery() {
 
   return (
     <AppLayout>
-      <Head title={category?.name || 'Kategória'} />
+      <Head>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+
+        {/* Canonical URL */}
+        <link rel="canonical" href={canonicalUrl} />
+
+        {/* Open Graph (Facebook, LinkedIn) */}
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalUrl} />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
+      </Head>
       <div>
         <div className="mx-auto max-w-7xl">
           <div className="overflow-hidden shadow-sm sm:rounded-lg">

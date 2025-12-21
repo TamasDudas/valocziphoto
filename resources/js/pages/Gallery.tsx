@@ -1,3 +1,4 @@
+import Pagination from '@/components/Pagination';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,12 +38,35 @@ interface Category {
   slug: string;
 }
 
+// Laravel pagination típus
+interface PaginatedData<T> {
+  data: T[]; // A tényleges képek az aktuális oldalon
+  current_page: number; // Aktuális oldal (1, 2, 3...)
+  last_page: number; // Utolsó oldal száma
+  per_page: number; // Képek száma oldalanként (20)
+  total: number; // Összes kép száma
+  links: Array<{
+    // Pagination gombok adatai
+    url: string | null;
+    label: string;
+    active: boolean;
+  }>;
+}
+
+// Page props típusa
+interface GalleryProps {
+  images: PaginatedData<Image>;
+  categories?: Category[];
+}
+
 export default function Gallery() {
-  const { images, categories } = usePage().props as {
-    images?: Image[];
-    categories?: Category[];
-  };
-  const imageList = Array.isArray(images) ? images : [];
+  // Backend küldi: images = { data, current_page, last_page, per_page, total, links }
+  // @ts-expect-error - Inertia usePage typing limitation
+  const { images, categories } = usePage().props as GalleryProps;
+
+  // images.data = képek az aktuális oldalon (tömb)
+  // images.links = pagination gombok (a Pagination komponensnek kell)
+  const imageList = images.data; // Képek az aktuális oldalon
   const categoryList = Array.isArray(categories) ? categories : [];
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -182,6 +206,15 @@ export default function Gallery() {
                     </p>
                   )}
                 </div>
+
+                {/* Pagination gombok */}
+                {/* images.links = csak a pagination linkek tömbje (nem az egész images objektum) */}
+                {/* Pagination komponens kapja: [{url, label, active}, ...] */}
+                {images.last_page > 1 && (
+                  <div className="mt-6">
+                    <Pagination links={images.links} />
+                  </div>
+                )}
               </div>
             </div>
 

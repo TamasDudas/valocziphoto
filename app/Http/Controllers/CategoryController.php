@@ -44,6 +44,8 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255',
                 'slug' => 'sometimes|string|max:255|unique:categories,slug',
                 'description' => 'nullable|string',
+                'meta_title' => 'nullable|string|max:60',
+                'meta_description' => 'nullable|string|max:160',
             ]);
 
             $validated['user_id'] = auth()->id();
@@ -82,11 +84,9 @@ class CategoryController extends Controller
         }
 
         $category->load(['images', 'featuredImage']);
-        $images = Image::where('user_id', auth()->id())->get();
 
         return Inertia::render('EditCategory', [
             'category' => (new CategoryResource($category))->resolve(),
-            'availableImages' => ImageResource::collection($images)->resolve(),
         ]);
     }
 
@@ -106,6 +106,8 @@ class CategoryController extends Controller
                 'slug' => 'sometimes|string|max:255|unique:categories,slug,'.$category->id,
                 'description' => 'nullable|string',
                 'featured_image_id' => 'nullable|exists:images,id',
+                'meta_title' => 'nullable|string|max:60',
+                'meta_description' => 'nullable|string|max:160',
             ]);
 
             // Ha új név érkezik de nincs slug, generáljuk a slug-ot a névből

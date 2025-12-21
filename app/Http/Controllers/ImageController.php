@@ -18,17 +18,37 @@ class ImageController extends Controller
      */
     public function index()
     {
-        $images = Image::with('categories')->where('user_id', auth()->id())->get();
+        // paginate(20) - 20 kép lesz oldalanként
+        // Automatikusan kezeli a ?page=2, ?page=3 stb. URL paramétereket
+        // Visszaad egy LengthAwarePaginator objektumot, ami tartalmazza:
+        // - data: a képek az adott oldalon
+        // - current_page, last_page, per_page, total stb. meta adatok
+        $images = Image::with('categories')
+            ->where('user_id', auth()->id())
+            ->latest() // legújabb először (created_at desc)
+            ->paginate(10);
         
-        // resolve() azonnal PHP tömbbé konvertálja a Resource Collection-t.
-        // Nélküle ResourceCollection objektumot kapnánk, ami később problémát okozhat
-        // az Inertia props feldolgozásakor. A resolve() biztosítja hogy tiszta
-        // PHP array megy át a frontend-nek JSON-ként.
-        $imagesArray = ImageResource::collection($images)->resolve();
         $categories = Category::where('user_id', auth()->id())->get();
 
         return Inertia::render('Gallery', [
-            'images' => $imagesArray,
+            // Pagination meta adatok megtartása: manuálisan strukturáljuk
+  
+            'images' => [
+                'data' => ImageResource::collection($images->items())->resolve(),
+                //Képek az aktuális oldalon
+                'current_page' => $images->currentPage(),
+                'last_page' => $images->lastPage(),
+                'per_page' => $images->perPage(),
+                'total' => $images->total(),
+                'links' => $images->linkCollection()->toArray(),
+            //   links: [                          // Pagination gombok
+            //     {url: null, label: "&laquo; Previous", active: false},
+            //     {url: "/gallery?page=1", label: "1", active: true},
+            //     {url: "/gallery?page=2", label: "2", active: false},
+            //     ...
+            //   ]
+            // }
+            ],
             'categories' => $categories,
         ]);
     }
