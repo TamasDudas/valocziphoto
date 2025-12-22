@@ -50,7 +50,7 @@ const mainNavItems: NavItem[] = [
   },
 ];
 
-const activeItemStyles = 'text-white';
+const activeItemStyles = 'text-white bg-chart-4';
 
 interface AppHeaderProps {
   breadcrumbs?: BreadcrumbItem[];
@@ -96,7 +96,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                           href={item.href}
                           className={cn(
                             'flex items-center space-x-2 font-medium',
-                            isSameUrl(page.url, item.href) && 'text-white',
+                            isSameUrl(page.url, item.href) &&
+                              'bg-chart-4 text-white',
                           )}
                         >
                           {item.icon && (
