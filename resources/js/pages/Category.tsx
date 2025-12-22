@@ -106,14 +106,14 @@ export default function CategoryGallery() {
               {/* Kiemelt kép felül */}
               {category.featured_image && (
                 <div className="mt-6 mb-8">
-                  <div className="h-52 w-full overflow-hidden sm:h-44 md:h-80 lg:h-[32rem]">
+                  <div className="relative h-[40vh] md:h-[50vh] lg:h-[85vh]">
                     <img
                       src={category.featured_image.image_url}
                       alt={
                         category.featured_image.alt_text ||
                         category.featured_image.original_filename
                       }
-                      className="h-full w-full rounded-2xl object-cover shadow-lg"
+                      className="h-full w-full rounded-2xl object-cover object-center shadow-lg"
                     />
                   </div>
                 </div>

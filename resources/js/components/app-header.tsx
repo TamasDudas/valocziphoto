@@ -50,8 +50,7 @@ const mainNavItems: NavItem[] = [
   },
 ];
 
-const activeItemStyles =
-  'text-neutral-900 dark:bg-chart-5 dark:text-neutral-100';
+const activeItemStyles = 'text-white';
 
 interface AppHeaderProps {
   breadcrumbs?: BreadcrumbItem[];
@@ -95,7 +94,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         <Link
                           key={item.title}
                           href={item.href}
-                          className="flex items-center space-x-2 font-medium"
+                          className={cn(
+                            'flex items-center space-x-2 font-medium',
+                            isSameUrl(page.url, item.href) && 'text-white',
+                          )}
                         >
                           {item.icon && (
                             <Icon iconNode={item.icon} className="h-5 w-5" />
@@ -137,7 +139,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                       {item.title}
                     </Link>
                     {isSameUrl(page.url, item.href) && (
-                      <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
+                      <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-white"></div>
                     )}
                   </NavigationMenuItem>
                 ))}
@@ -170,15 +172,15 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
               <div className="flex items-center space-x-2">
                 <Link
                   href={login()}
-                  className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
+                  className="inline-block rounded-sm border border-chart-3 px-5 py-1.5 text-sm leading-normal text-accent-foreground hover:bg-chart-4"
                 >
-                  Log in
+                  Belépés
                 </Link>
                 <Link
                   href={register()}
-                  className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                  className="inline-block rounded-sm border border-chart-3 px-5 py-1.5 text-sm leading-normal text-accent-foreground hover:bg-chart-4"
                 >
-                  Register
+                  Regisztráció
                 </Link>
               </div>
             )}

@@ -16,7 +16,7 @@ import { edit } from '@/routes/profile';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Profile settings',
+    title: 'Profil beállítások',
     href: edit().url,
   },
 ];
@@ -37,7 +37,7 @@ export default function Profile({
       <SettingsLayout>
         <div className="space-y-6">
           <HeadingSmall
-            title="Profile information"
+            title="Profil információk"
             description="Név és email frissítés"
           />
 
@@ -51,7 +51,7 @@ export default function Profile({
             {({ processing, recentlySuccessful, errors }) => (
               <>
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">Név</Label>
 
                   <Input
                     id="name"
@@ -60,14 +60,14 @@ export default function Profile({
                     name="name"
                     required
                     autoComplete="name"
-                    placeholder="Full name"
+                    placeholder="Teljes név"
                   />
 
                   <InputError className="mt-2" message={errors.name} />
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email address</Label>
+                  <Label htmlFor="email">Email cím</Label>
 
                   <Input
                     id="email"
@@ -77,7 +77,7 @@ export default function Profile({
                     name="email"
                     required
                     autoComplete="username"
-                    placeholder="Email address"
+                    placeholder="Email cím"
                   />
 
                   <InputError className="mt-2" message={errors.email} />
@@ -86,20 +86,19 @@ export default function Profile({
                 {mustVerifyEmail && auth.user.email_verified_at === null && (
                   <div>
                     <p className="-mt-4 text-sm text-muted-foreground">
-                      Your email address is unverified.{' '}
+                      Az email címed nincs ellenőrizve.{' '}
                       <Link
                         href={send()}
                         as="button"
                         className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                       >
-                        Click here to resend the verification email.
+                        Kattints ide az ellenőrző email újraküldéséhez.
                       </Link>
                     </p>
 
                     {status === 'verification-link-sent' && (
                       <div className="mt-2 text-sm font-medium text-green-600">
-                        A new verification link has been sent to your email
-                        address.
+                        A megerősítő linket elküldtük az email címedre.
                       </div>
                     )}
                   </div>
@@ -110,7 +109,7 @@ export default function Profile({
                     disabled={processing}
                     data-test="update-profile-button"
                   >
-                    Save
+                    Mentés
                   </Button>
 
                   <Transition
@@ -120,7 +119,7 @@ export default function Profile({
                     leave="transition ease-in-out"
                     leaveTo="opacity-0"
                   >
-                    <p className="text-sm text-neutral-600">Saved</p>
+                    <p className="text-sm text-neutral-600">Mentve</p>
                   </Transition>
                 </div>
               </>
