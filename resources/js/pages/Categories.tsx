@@ -87,6 +87,11 @@ export default function Categories({ categories }: Props) {
 
       {/* AlertDialog a kategória törlésének megerősítéséhez */}
       <AlertDialog
+        /* Az open prop azt szabályozza, hogy az AlertDialog nyitva van-e vagy sem.
+            Itt !!categoryToDelete azt jelenti, hogy nyitva van, ha van kiválasztott kategória törlésre (categoryToDelete nem null).
+            A !! (dupla negáció) explicit módon boolean-ra konvertálja az értéket, biztosítva, hogy az open prop mindig boolean típusú legyen.
+            Nem használhatjuk közvetlenül a setCategoryToDelete-et, mert az egy setter függvény, amely beállítja az állapotot,
+            de az open-nek az állapot aktuális értékére (boolean-ra) van szüksége. */
         open={!!categoryToDelete}
         onOpenChange={(open) => !open && setCategoryToDelete(null)}
       >
